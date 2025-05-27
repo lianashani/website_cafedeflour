@@ -10,6 +10,11 @@ include '../../../../config/koneksi.php';
 
 $nama_kasir = strtolower($_SESSION['nama_kasir']);
 $foto_kasir = "../../assets/images/faces/" . $nama_kasir . ".jpeg";
+$notif = "";
+if (isset($_SESSION['notif'])) {
+  $notif = $_SESSION['notif'];
+  unset($_SESSION['notif']);
+}
 
 // Fallback jika foto tidak ada
 if (!file_exists($foto_kasir)) {
@@ -33,35 +38,11 @@ if ($kategori) {
 $result = mysqli_query($conn, $query);
 
 
-$transaksiQuery = "
-SELECT 
-  t.kode_transaksi,
-  MAX(t.tanggal) as tanggal,
-  MAX(t.waktu) as waktu,
-  COALESCE(MAX(p.nama), MAX(t.nama_pelanggan), '-') AS nama_pelanggan,
-  MAX(t.lokasi) as lokasi,
-  MAX(k.nama_kasir) as nama_kasir,
-  MAX(t.catatan) as catatan,
-  GROUP_CONCAT(CONCAT(m.nama_menu, ' (', td.jumlah, ')') SEPARATOR ', ') as daftar_menu,
-  SUM(td.harga_saat_transaksi * td.jumlah) as total_harga,
-  MAX(t.bayar) as bayar,
-  MAX(t.kembali) as kembali,
-  MAX(t.status) as status
-FROM transaksi t
-LEFT JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
-JOIN kasir k ON t.id_kasir = k.id_kasir
-JOIN transaksi_detail td ON t.id_transaksi = td.id_transaksi
-JOIN menu m ON td.id_menu = m.id_menu
-GROUP BY t.kode_transaksi
-ORDER BY MAX(t.id_transaksi) DESC
-";
-
-$transaksiResult = mysqli_query($conn, $transaksiQuery);
-if (!$transaksiResult) {
-    die("Query gagal: " . mysqli_error($conn));
-}
-
 ?>
+<!-- Tampilkan notif -->
+<?php if ($notif): ?>
+  <div class="alert alert-info"><?= $notif ?></div>
+<?php endif; ?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -168,52 +149,21 @@ if (!$transaksiResult) {
                   </div>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
-                <i class="mdi mdi-bell-outline"></i>
-                <span class="count-symbol bg-danger"></span>
-              </a>
-              <div class="dropdown-menu dropdown-menu-end navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
-                <h6 class="p-3 mb-0">Notifications</h6>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item preview-item">
-                  <div class="preview-thumbnail">
-                    <div class="preview-icon bg-success">
-                      <i class="mdi mdi-calendar"></i>
-                    </div>
-                  </div>
-                  <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                    <h6 class="preview-subject font-weight-normal mb-1">Event today</h6>
-                    <p class="text-gray ellipsis mb-0"> Just a reminder that you have an event today </p>
-                  </div>
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item preview-item">
-                  <div class="preview-thumbnail">
-                    <div class="preview-icon bg-warning">
-                      <i class="mdi mdi-cog"></i>
-                    </div>
-                  </div>
-                  <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                    <h6 class="preview-subject font-weight-normal mb-1">Settings</h6>
-                    <p class="text-gray ellipsis mb-0"> Update dashboard </p>
-                  </div>
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item preview-item">
-                  <div class="preview-thumbnail">
-                    <div class="preview-icon bg-info">
-                      <i class="mdi mdi-link-variant"></i>
-                    </div>
-                  </div>
-                  <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                    <h6 class="preview-subject font-weight-normal mb-1">Launch Admin</h6>
-                    <p class="text-gray ellipsis mb-0"> New admin wow! </p>
-                  </div>
-                </a>
-                <div class="dropdown-divider"></div>
-                <h6 class="p-3 mb-0 text-center">See all notifications</h6>
+            <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
+              <i class="mdi mdi-bell-outline"></i>
+              <span class="count-symbol bg-danger" id="notificationCount" style="display: none;"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end navbar-dropdown preview-list" aria-labelledby="notificationDropdown" id="notificationList">
+              <h6 class="p-3 mb-0">Notifications</h6>
+              <div class="dropdown-divider"></div>
+              <div id="notificationItems">
+                <p class="text-center text-muted mb-0">Tidak ada notifikasi baru</p>
               </div>
-            </li>
+              <div class="dropdown-divider"></div>
+              <a href="/website/purple-free/dist/backend/transaksi/antrian.php" class="p-3 mb-0 text-center d-block text-primary" style="text-decoration: none;">Lihat Semua</a>
+            </div>
+          </li>
+
             <li class="nav-item nav-logout d-none d-lg-block">
               <a class="nav-link" href="#">
                 <i class="mdi mdi-power"></i>
@@ -276,9 +226,7 @@ if (!$transaksiResult) {
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
                 <li class="nav-item">
-                    <a class="nav-link" href="../../pages/tables/basic-table.php">Semua tabel data cafe</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-kasir.php">Data Kasir</a>
-                    <a class="nav-link" href="../../pages/tables/basic-table-datamenu.php">Data menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-datamember.php">Data member</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-daftarmenu.php">Daftar menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-review.php">Review</a>

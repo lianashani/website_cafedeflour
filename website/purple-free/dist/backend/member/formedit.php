@@ -12,9 +12,9 @@ $foto_kasir = "/website/purple-free/dist/assets/images/faces/" . $nama_kasir . "
 include '../../../../config/koneksi.php';
 
 $id = $_GET['id'];
-$data = mysqli_query($conn, "SELECT * FROM pelanggan WHERE id_pelanggan = $id");
+$data = mysqli_query($conn, "SELECT * FROM special_members WHERE id_member = $id");
 $row = mysqli_fetch_assoc($data);
-?>
+?> 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -236,12 +236,12 @@ $row = mysqli_fetch_assoc($data);
               </a>
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
-                <li class="nav-item">
-                    <a class="nav-link" href="../../pages/tables/basic-table.php">Semua tabel data cafe</a>
+              <li class="nav-item">
                     <a class="nav-link" href="../../pages/tables/basic-table-kasir.php">Data Kasir</a>
-                    <a class="nav-link" href="../../pages/tables/basic-table-datamenu.php">Data menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-datamember.php">Data member</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-daftarmenu.php">Daftar menu</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-review.php">Review</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-diskon.php">Kode promo</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-transaksi.php">Riwayat Transaksi</a>
                   </li>
                 </ul>
@@ -249,43 +249,50 @@ $row = mysqli_fetch_assoc($data);
             </li>
         </nav>
         <!-- partial -->
-        <div class="main-panel">
-          <div class="content-wrapper">
-            <div class="page-header">
-              <h3 class="page-title"> Edit member </h3>
-              <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="#">Edit member</a></li>
-                  <li class="breadcrumb-item active" aria-current="page">daftar member</li>
-                </ol>
-              </nav>
-            </div>
-
-            <?php include '../../../../config/koneksi.php'; ?>
-            <div class="container mt-5">
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">Form Edit Member</h4>
-            <form method="POST" action="update.php" class="forms-sample">
-                <input type="hidden" name="id_pelanggan" value="<?= $row['id_pelanggan'] ?>">
-                <div class="form-group">
-                    <label>Nama</label>
-                    <input type="text" name="nama" class="form-control" value="<?= $row['nama'] ?>" required>
-                </div>
-                <div class="form-group">
-                    <label>Alamat</label>
-                    <input type="text" name="alamat" class="form-control" value="<?= $row['alamat'] ?>" required>
-                </div>
-                <div class="form-group">
-                    <label>Nomor Pelanggan</label>
-                    <input type="text" name="nomor_pelanggan" class="form-control" value="<?= $row['nomor_pelanggan'] ?>" required>
-                </div>
-                <button type="submit" class="btn btn-gradient-primary me-2">Update</button>
-                <a href="../../pages/tables/basic-table-datamember.php" class="btn btn-light">Batal</a>
-            </form>
-        </div>
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <h3 class="page-title"> Edit Member </h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">Edit Member</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Daftar Member</li>
+        </ol>
+      </nav>
     </div>
+
+    <div class="container mt-5">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Form Edit Member</h4>
+          <form method="POST" action="update.php" class="forms-sample">
+            <input type="hidden" name="id_member" value="<?= $row['id_member'] ?>">
+            
+            <div class="form-group">
+              <label>Nama Member</label>
+              <input type="text" name="nama_member" class="form-control" value="<?= $row['nama_member'] ?>" required>
+            </div>
+            <div class="form-group">
+              <label>Nomor HP</label>
+              <input type="text" name="nomor_hp" class="form-control" value="<?= $row['nomor_hp'] ?>" required>
+            </div>
+            <div class="form-group">
+              <label>Tingkatan</label>
+              <select name="tingkatan" class="form-control" required>
+                <option value="Bronze" <?= $row['tingkatan'] == 'Bronze' ? 'selected' : '' ?>>Bronze</option>
+                <option value="Silver" <?= $row['tingkatan'] == 'Silver' ? 'selected' : '' ?>>Silver</option>
+                <option value="Gold" <?= $row['tingkatan'] == 'Gold' ? 'selected' : '' ?>>Gold</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gradient-primary me-2">Update</button>
+            <a href="../../pages/tables/basic-table-datamember.php" class="btn btn-light">Batal</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
           <!-- content-wrapper ends -->
         </div>
         <!-- main-panel ends -->

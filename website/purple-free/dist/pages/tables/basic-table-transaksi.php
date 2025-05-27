@@ -8,6 +8,13 @@ if (!isset($_SESSION['nama_kasir'])) {
 
 include '../../../../config/koneksi.php';
 
+$notif = "";
+if (isset($_SESSION['notif'])) {
+  $notif = $_SESSION['notif'];
+  unset($_SESSION['notif']);
+}
+
+
 $nama_kasir = strtolower($_SESSION['nama_kasir']);
 $foto_kasir = "../../assets/images/faces/" . $nama_kasir . ".jpeg";
 
@@ -39,7 +46,7 @@ SELECT
   t.kode_transaksi,
   MAX(t.tanggal) as tanggal,
   MAX(t.waktu) as waktu,
-  COALESCE(MAX(p.nama), MAX(t.nama_pelanggan), '-') AS nama_pelanggan,
+  COALESCE(MAX(sm.nama_member), MAX(t.nama_pelanggan), '-') AS nama_pelanggan,
   MAX(t.lokasi) as lokasi,
   MAX(k.nama_kasir) as nama_kasir,
   MAX(t.catatan) as catatan,
@@ -49,7 +56,7 @@ SELECT
   MAX(t.kembali) as kembali,
   MAX(t.status) as status
 FROM transaksi t
-LEFT JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
+LEFT JOIN special_members sm ON t.id_pelanggan = sm.id_member
 JOIN kasir k ON t.id_kasir = k.id_kasir
 JOIN transaksi_detail td ON t.id_transaksi = td.id_transaksi
 JOIN menu m ON td.id_menu = m.id_menu
@@ -62,7 +69,14 @@ if (!$transaksiResult) {
     die("Query gagal: " . mysqli_error($conn));
 }
 
+
 ?>
+
+<!-- Tampilkan notif -->
+<?php if ($notif): ?>
+  <div class="alert alert-info"><?= $notif ?></div>
+<?php endif; ?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -172,53 +186,22 @@ if (!$transaksiResult) {
                 <h6 class="p-3 mb-0 text-center">4 new messages</h6>
               </div>
             </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
-                <i class="mdi mdi-bell-outline"></i>
-                <span class="count-symbol bg-danger"></span>
-              </a>
-              <div class="dropdown-menu dropdown-menu-end navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
-                <h6 class="p-3 mb-0">Notifications</h6>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item preview-item">
-                  <div class="preview-thumbnail">
-                    <div class="preview-icon bg-success">
-                      <i class="mdi mdi-calendar"></i>
-                    </div>
-                  </div>
-                  <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                    <h6 class="preview-subject font-weight-normal mb-1">Event today</h6>
-                    <p class="text-gray ellipsis mb-0"> Just a reminder that you have an event today </p>
-                  </div>
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item preview-item">
-                  <div class="preview-thumbnail">
-                    <div class="preview-icon bg-warning">
-                      <i class="mdi mdi-cog"></i>
-                    </div>
-                  </div>
-                  <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                    <h6 class="preview-subject font-weight-normal mb-1">Settings</h6>
-                    <p class="text-gray ellipsis mb-0"> Update dashboard </p>
-                  </div>
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item preview-item">
-                  <div class="preview-thumbnail">
-                    <div class="preview-icon bg-info">
-                      <i class="mdi mdi-link-variant"></i>
-                    </div>
-                  </div>
-                  <div class="preview-item-content d-flex align-items-start flex-column justify-content-center">
-                    <h6 class="preview-subject font-weight-normal mb-1">Launch Admin</h6>
-                    <p class="text-gray ellipsis mb-0"> New admin wow! </p>
-                  </div>
-                </a>
-                <div class="dropdown-divider"></div>
-                <h6 class="p-3 mb-0 text-center">See all notifications</h6>
+             <li class="nav-item dropdown">
+            <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
+              <i class="mdi mdi-bell-outline"></i>
+              <span class="count-symbol bg-danger" id="notificationCount" style="display: none;"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end navbar-dropdown preview-list" aria-labelledby="notificationDropdown" id="notificationList">
+              <h6 class="p-3 mb-0">Notifications</h6>
+              <div class="dropdown-divider"></div>
+              <div id="notificationItems">
+                <p class="text-center text-muted mb-0">Tidak ada notifikasi baru</p>
               </div>
-            </li>
+              <div class="dropdown-divider"></div>
+              <a href="/website/purple-free/dist/backend/transaksi/antrian.php" class="p-3 mb-0 text-center d-block text-primary" style="text-decoration: none;">Lihat Semua</a>
+            </div>
+          </li>
+
             <li class="nav-item nav-logout d-none d-lg-block">
               <a class="nav-link" href="#">
                 <i class="mdi mdi-power"></i>
@@ -281,9 +264,7 @@ if (!$transaksiResult) {
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
                   <li class="nav-item">
-                    <a class="nav-link" href="../../pages/tables/basic-table.php">Semua tabel data cafe</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-kasir.php">Data Kasir</a>
-                    <a class="nav-link" href="../../pages/tables/basic-table-datamenu.php">Data menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-datamember.php">Data member</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-daftarmenu.php">Daftar menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-review.php">Review</a>
@@ -399,6 +380,53 @@ if (!$transaksiResult) {
     <script src="../../assets/js/settings.js"></script>
     <script src="../../assets/js/todolist.js"></script>
     <script src="../../assets/js/jquery.cookie.js"></script>
+     <script>
+    function fetchNotifications() {
+      fetch('backend/notif/get-notification.php')
+        .then(response => response.json())
+        .then(data => {
+          const list = document.getElementById('notificationItems');
+          const count = document.getElementById('notificationCount');
+          list.innerHTML = '';
+
+          if (data.length > 0) {
+            count.style.display = 'inline-block';
+            count.innerText = data.length;
+
+            data.forEach(item => {
+              list.innerHTML += `
+                <a href="backend/transaksi/antrian.php" class="dropdown-item preview-item">
+                  <div class="preview-thumbnail">
+                    <div class="preview-icon bg-success">
+                      <i class="mdi mdi-cart"></i>
+                    </div>
+                  </div>
+                  <div class="preview-item-content">
+                    <h6 class="preview-subject font-weight-normal mb-1">Pesanan Baru dari ${item.nama}</h6>
+                    <p class="text-gray ellipsis mb-0">Kode: ${item.kode}</p>
+                    <p class="text-gray ellipsis mb-0">Waktu: ${item.waktu}</p>
+                    <p class="text-gray ellipsis mb-0">Lokasi: ${item.lokasi}</p>
+                    <p class="text-gray ellipsis mb-0">Catatan: ${item.catatan || '-'}</p>
+                  </div>
+                </a>
+                <div class="dropdown-divider"></div>
+              `;
+            });
+
+          } else {
+            count.style.display = 'none';
+            list.innerHTML = `<p class="text-center text-muted mb-0">Tidak ada notifikasi baru</p>`;
+          }
+        })
+        .catch(err => {
+          console.error('Gagal mengambil notifikasi:', err);
+        });
+    }
+
+    // Fetch setiap 5 detik
+    setInterval(fetchNotifications, 5000);
+    fetchNotifications(); // Panggil sekali saat pertama load
+    </script>
     <!-- endinject -->
     <!-- Custom js for this page -->
     <!-- End custom js for this page -->

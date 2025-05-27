@@ -266,11 +266,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
                 <li class="nav-item">
-                    <a class="nav-link" href="../../pages/tables/basic-table.php">Semua tabel data cafe</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-kasir.php">Data Kasir</a>
-                    <a class="nav-link" href="../../pages/tables/basic-table-datamenu.php">Data menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-datamember.php">Data member</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-daftarmenu.php">Daftar menu</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-review.php">Review</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-diskon.php">Kode promo</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-transaksi.php">Riwayat Transaksi</a>
                   </li>
                 </ul>

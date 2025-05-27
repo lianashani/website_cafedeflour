@@ -1,6 +1,5 @@
 <?php 
 include '../../../../config/koneksi.php';
-
 session_start(); 
 
 if (!isset($_SESSION['nama_kasir'])) {
@@ -10,15 +9,13 @@ if (!isset($_SESSION['nama_kasir'])) {
 
 $nama_kasir = strtolower($_SESSION['nama_kasir']);
 $foto_kasir = "../../assets/images/faces/" . $nama_kasir . ".jpeg";
-
-// Fallback jika foto tidak ada
 if (!file_exists($foto_kasir)) {
-  $foto_kasir = "../../assets/images/faces/default.jpg";
+    $foto_kasir = "../../assets/images/faces/default.jpg";
 }
 
 if (!isset($_GET['kode'])) {
-  echo "Kode transaksi tidak ditemukan.";
-  exit;
+    echo "Kode transaksi tidak ditemukan.";
+    exit;
 }
 
 $kode = $_GET['kode'] ?? '';
@@ -31,22 +28,22 @@ SELECT
   td.jumlah,
   td.harga_saat_transaksi,
   m.nama_menu,
-  t.nama_pelanggan AS nama_pelanggan
+  COALESCE(sm.nama_member, t.nama_pelanggan) AS nama_pelanggan
 FROM transaksi t
 LEFT JOIN transaksi_detail td ON t.id_transaksi = td.id_transaksi
 LEFT JOIN menu m ON td.id_menu = m.id_menu
-LEFT JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
+LEFT JOIN special_members sm ON t.id_pelanggan = sm.id_member
 WHERE t.kode_transaksi = '$kode'
 ";
 
 $result = mysqli_query($conn, $query);
 $transaksi = [];
 while ($row = mysqli_fetch_assoc($result)) {
-  $transaksi[] = $row;
+    $transaksi[] = $row;
 }
 if (empty($transaksi)) {
-  echo "Data tidak ditemukan.";
-  exit;
+    echo "Data tidak ditemukan.";
+    exit;
 }
 
 $id_transaksi = $transaksi[0]['id_transaksi'];
@@ -54,61 +51,62 @@ $id_transaksi = $transaksi[0]['id_transaksi'];
 // Ambil data menu
 $menuResult = mysqli_query($conn, "SELECT * FROM menu");
 
-// Ambil data pelanggan
-$pelangganResult = mysqli_query($conn, "SELECT * FROM pelanggan");
+// Ambil data pelanggan dari special_members
+$pelangganResult = mysqli_query($conn, "SELECT * FROM special_members");
 
 // Simpan perubahan
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $nama_pelanggan = mysqli_real_escape_string($conn, $_POST['nama_pelanggan']);
-  $lokasi         = mysqli_real_escape_string($conn, $_POST['lokasi']);
-  $catatan        = mysqli_real_escape_string($conn, $_POST['catatan']);
-  $bayar          = (int) $_POST['bayar'];
-  $menuInput      = $_POST['menu'];
+    $nama_pelanggan = mysqli_real_escape_string($conn, $_POST['nama_pelanggan']);
+    $lokasi         = mysqli_real_escape_string($conn, $_POST['lokasi']);
+    $catatan        = mysqli_real_escape_string($conn, $_POST['catatan']);
+    $bayar          = (int) $_POST['bayar'];
+    $menuInput      = $_POST['menu'];
 
-  // Ambil id_pelanggan
-  $pelangganCheck = mysqli_query($conn, "SELECT id_pelanggan FROM pelanggan WHERE nama = '$nama_pelanggan'");
-  if (mysqli_num_rows($pelangganCheck) > 0) {
-    $pelangganData = mysqli_fetch_assoc($pelangganCheck);
-    $id_pelanggan = $pelangganData['id_pelanggan'];
-  } else {
-    // Insert jika belum ada
-    mysqli_query($conn, "INSERT INTO pelanggan (nama) VALUES ('$nama_pelanggan')");
-    $id_pelanggan = mysqli_insert_id($conn);
-  }
+    // Ambil id_member dari special_members
+    $pelangganCheck = mysqli_query($conn, "SELECT id_member FROM special_members WHERE nama_member = '$nama_pelanggan'");
+    if (mysqli_num_rows($pelangganCheck) > 0) {
+        $pelangganData = mysqli_fetch_assoc($pelangganCheck);
+        $id_pelanggan = $pelangganData['id_member'];
+    } else {
+        // Insert jika belum ada
+        mysqli_query($conn, "INSERT INTO special_members (nama_member) VALUES ('$nama_pelanggan')");
+        $id_pelanggan = mysqli_insert_id($conn);
+    }
 
-  // Update transaksi utama
-  mysqli_query($conn, "
-    UPDATE transaksi SET 
-      id_pelanggan = '$id_pelanggan',
-      lokasi = '$lokasi',
-      catatan = '$catatan',
-      bayar = '$bayar'
-    WHERE id_transaksi = '$id_transaksi'
-  ");
-
-  // Hapus transaksi_detail lama
-  mysqli_query($conn, "DELETE FROM transaksi_detail WHERE id_transaksi = '$id_transaksi'");
-
-  // Simpan transaksi_detail baru
-  foreach ($menuInput as $item) {
-    $id_menu = (int) $item['id_menu'];
-    $jumlah  = (int) $item['jumlah'];
-
-    // Ambil harga dari menu
-    $hargaQuery = mysqli_query($conn, "SELECT harga FROM menu WHERE id_menu = '$id_menu'");
-    $hargaRow = mysqli_fetch_assoc($hargaQuery);
-    $harga_saat_transaksi = $hargaRow['harga'];
-
+    // Update transaksi utama
     mysqli_query($conn, "
-      INSERT INTO transaksi_detail (id_transaksi, id_menu, jumlah, harga_saat_transaksi)
-      VALUES ('$id_transaksi', '$id_menu', '$jumlah', '$harga_saat_transaksi')
+        UPDATE transaksi SET 
+            id_pelanggan = '$id_pelanggan',
+            lokasi = '$lokasi',
+            catatan = '$catatan',
+            bayar = '$bayar'
+        WHERE id_transaksi = '$id_transaksi'
     ");
-  }
 
-  header("Location: ../../pages/charts/chartjs.php?edit=1");
-  exit;
+    // Hapus transaksi_detail lama
+    mysqli_query($conn, "DELETE FROM transaksi_detail WHERE id_transaksi = '$id_transaksi'");
+
+    // Simpan transaksi_detail baru
+    foreach ($menuInput as $item) {
+        $id_menu = (int) $item['id_menu'];
+        $jumlah  = (int) $item['jumlah'];
+
+        // Ambil harga dari menu
+        $hargaQuery = mysqli_query($conn, "SELECT harga FROM menu WHERE id_menu = '$id_menu'");
+        $hargaRow = mysqli_fetch_assoc($hargaQuery);
+        $harga_saat_transaksi = $hargaRow['harga'];
+
+        mysqli_query($conn, "
+            INSERT INTO transaksi_detail (id_transaksi, id_menu, jumlah, harga_saat_transaksi)
+            VALUES ('$id_transaksi', '$id_menu', '$jumlah', '$harga_saat_transaksi')
+        ");
+    }
+
+    header("Location: ../../pages/charts/chartjs.php?edit=1");
+    exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

@@ -1,10 +1,19 @@
 <?php
 include '../../../../config/koneksi.php';
 
-$id = $_POST['id_pelanggan'];
-$nama = $_POST['nama'];
-$alamat = $_POST['alamat'];
-$nomor = $_POST['nomor_pelanggan'];
+$id = $_POST['id_member'];
+$nama = $_POST['nama_member'];
+$nomor_hp = $_POST['nomor_hp'];
+$tingkatan = $_POST['tingkatan'];
 
-mysqli_query($conn, "UPDATE pelanggan SET nama='$nama', alamat='$alamat', nomor_pelanggan='$nomor' WHERE id_pelanggan=$id");
-header("Location: http://db_cafedeflour.test/website/purple-free/dist/pages/tables/basic-table-datamember.php");
+$query = "UPDATE special_members SET 
+          nama_member = '$nama',
+          nomor_hp = '$nomor_hp',
+          tingkatan = '$tingkatan'
+          WHERE id_member = $id";
+
+if (mysqli_query($conn, $query)) {
+    header("Location: ../../pages/tables/basic-table-datamember.php?update=success");
+} else {
+    echo "Gagal update member: " . mysqli_error($conn);
+}

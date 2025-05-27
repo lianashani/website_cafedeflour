@@ -208,9 +208,8 @@
       color: #fff;
       line-height: 1.1;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      background: linear-gradient(135deg, #ffffff 0%, var(--accent-color) 100%);
+      background: white;
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
@@ -636,22 +635,7 @@
     <span>Café de Flour</span>
   </a>
 
-  <!-- Social Links -->
-  <div class="social-links">
-    <a href="#" class="social-link" title="Instagram">
-      <i class="fab fa-instagram"></i>
-    </a>
-    <a href="#" class="social-link" title="Facebook">
-      <i class="fab fa-facebook-f"></i>
-    </a>
-    <a href="#" class="social-link" title="Twitter">
-      <i class="fab fa-twitter"></i>
-    </a>
-    <a href="#" class="social-link" title="YouTube">
-      <i class="fab fa-youtube"></i>
-    </a>
-  </div>
-
+ 
   <!-- Main Carousel -->
   <div id="landingCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
     <!-- Carousel Indicators -->
@@ -746,11 +730,6 @@
     </button>
   </div>
 
-  <!-- Scroll Indicator -->
-  <div class="scroll-indicator">
-    <span>Scroll Down</span>
-    <div class="scroll-arrow"></div>
-  </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

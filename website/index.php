@@ -41,7 +41,226 @@ $best_seller = mysqli_query($conn, "
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
-  
+    <style>
+        /* Shopping Cart Styles */
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1050;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .cart-sidebar.open {
+            right: 0;
+        }
+        
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .cart-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .cart-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background: #8B4513;
+            color: white;
+        }
+        
+        .cart-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .cart-item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .cart-item-price {
+            color: #8B4513;
+            font-weight: 500;
+        }
+        
+        .cart-quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quantity-btn:hover {
+            background: #8B4513;
+            color: white;
+            border-color: #8B4513;
+        }
+        
+        .cart-total {
+            padding: 20px;
+            border-top: 2px solid #8B4513;
+            background: #f8f9fa;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .cart-button {
+            position: relative;
+            background: #8B4513;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cart-button:hover {
+            background: #6d3410;
+            transform: translateY(-2px);
+        }
+        
+        .add-to-cart-btn {
+            background: #8B4513;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .add-to-cart-btn:hover {
+            background: #6d3410;
+            transform: translateY(-2px);
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-cart i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .cart-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+        }
+        
+        /* Enhanced Order Button Styles */
+        .order-button {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .order-button:hover {
+            background: linear-gradient(135deg, #6d3410, #8B4513);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        }
+        
+        /* Quick Add Animation */
+        .quick-add-animation {
+            animation: quickAdd 0.6s ease;
+        }
+        
+        @keyframes quickAdd {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Cart notification */
+        .cart-notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 1060;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .cart-notification.show {
+            transform: translateX(0);
+        }
+    </style>
 </head>
 
 <body>
@@ -62,12 +281,64 @@ $best_seller = mysqli_query($conn, "
                     <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
                     <li class="nav-item"><a class="nav-link" href="#reviews">Reviews</a></li>
                     <li class="nav-item"><a class="nav-link" href="#track">Track Order</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/member_dashboard/login.php">Member Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="login.php">Cashier Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    <li class="nav-item">
+                        <button class="cart-button" onclick="toggleCart()">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-badge" id="cartBadge">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Your Cart</h5>
+                <button class="btn btn-link text-white p-0" onclick="toggleCart()">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="cartItems">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Your cart is empty</p>
+                <small>Add some delicious items to get started!</small>
+            </div>
+        </div>
+        
+        <div class="cart-total" id="cartTotal" style="display: none;">
+            <div class="d-flex justify-content-between mb-2">
+                <span>Subtotal:</span>
+                <span id="cartSubtotal">Rp 0</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <strong>Total:</strong>
+                <strong id="cartTotalAmount">Rp 0</strong>
+            </div>
+            <button class="btn btn-primary w-100" onclick="proceedToCheckout()">
+                <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+            </button>
+            <button class="btn btn-outline-secondary w-100 mt-2" onclick="clearCart()">
+                <i class="fas fa-trash me-2"></i>Clear Cart
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Notification -->
+    <div class="cart-notification" id="cartNotification">
+        <i class="fas fa-check-circle me-2"></i>
+        <span id="notificationText">Item added to cart!</span>
+    </div>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
@@ -85,7 +356,7 @@ $best_seller = mysqli_query($conn, "
                                 <i class="fas fa-utensils"></i>
                                 Explore Menu
                             </a>
-                            <a href="#about" class="btn-outline-custom">
+                            <a href="#about" class="btn-outline-custom" style="color: white;">
                                 <i class="fas fa-play"></i>
                                 Our Story
                             </a>
@@ -94,7 +365,7 @@ $best_seller = mysqli_query($conn, "
                 </div>
                 <div class="col-lg-6" data-aos="fade-left">
                     <div class="text-center">
-                        <img src="assets/img/hero-coffee-cup.png" alt="Coffee" class="img-fluid" style="max-width: 400px;">
+                        <img src="/assets/img/about.png" alt="Coffee" class="img-fluid" style="max-width: 400px;">
                     </div>
                 </div>
             </div>
@@ -132,11 +403,10 @@ $best_seller = mysqli_query($conn, "
                             <p class="card-text text-muted small mb-3"><?php echo $menu['deskripsi']; ?></p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="price-tag">Rp <?php echo number_format($menu['harga'], 0, ',', '.'); ?></span>
-                                <button class="btn btn-sm btn-primary-custom order-button" style="color: white;"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#orderModal" 
-                                        data-id="<?php echo $menu['id_menu']; ?>">
-                                    Order Now
+                                <button class="add-to-cart-btn" 
+                                        onclick="addToCart(<?php echo $menu['id_menu']; ?>, '<?php echo addslashes($menu['nama_menu']); ?>', <?php echo $menu['harga']; ?>, 'assets/img/newmenu/<?php echo $menu['gambar']; ?>', <?php echo $menu['stok']; ?>)"
+                                        <?php echo $menu['stok'] <= 0 ? 'disabled' : ''; ?>>
+                                    <?php echo $menu['stok'] <= 0 ? 'Out of Stock' : '<i class="fas fa-plus me-1"></i>Add to Cart'; ?>
                                 </button>
                             </div>
                         </div>
@@ -193,10 +463,11 @@ $best_seller = mysqli_query($conn, "
                             <div>
                                 <h6 class="mb-1 font-weight-bold">'.htmlspecialchars($r['nama_pelanggan']).'</h6>
                                 <div class="star-rating">'.$stars.'</div>
+                                 <small class="text-muted">'.date('M d, Y', strtotime($r['tanggal'])).'</small>
+
                             </div>
                         </div>
                         <p class="text-muted mb-3 fst-italic">"'.htmlspecialchars($r['komentar']).'"</p>
-                        <small class="text-muted">'.date('M d, Y', strtotime($r['tanggal'])).'</small>
                         '.$foto.'
                     </div>';
                 }
@@ -265,11 +536,9 @@ $best_seller = mysqli_query($conn, "
                                     <?php echo $stok_text; ?> (<?php echo $stok; ?>)
                                 </span>
                                 <?php if ($menu['stok'] > 0): ?>
-                                    <button class="btn btn-sm btn-primary-custom order-button" style="color:white"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#orderModal"
-                                            data-id="<?php echo $menu['id_menu']; ?>">
-                                        <i class="fas fa-plus"></i> Order
+                                    <button class="add-to-cart-btn"
+                                            onclick="addToCart(<?php echo $menu['id_menu']; ?>, '<?php echo addslashes($menu['nama_menu']); ?>', <?php echo $menu['harga']; ?>, 'assets/img/newmenu/<?php echo $menu['gambar']; ?>', <?php echo $menu['stok']; ?>)">
+                                        <i class="fas fa-plus me-1"></i> Add to Cart
                                     </button>
                                 <?php else: ?>
                                     <span class="badge bg-danger">Out of Stock</span>
@@ -358,7 +627,7 @@ $best_seller = mysqli_query($conn, "
                 <div class="col-lg-2 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="100">
                     <div class="team-card">
                         <img src="assets/img/team/fahis.jpeg" alt="Fahish al-Azka" class="team-avatar">
-                        <h5 class="font-display mb-2">Fahish al-Azka</h5>
+                        <h5 class="font-display mb-2">Fahish al-A</h5>
                         <p class="text-muted small mb-3">Lead Developer</p>
                         <div class="social-links">
                             <a href="https://www.instagram.com/fhisssc?igsh=MXFvOGNlN3MxY3owZg=="><i class="fab fa-instagram"></i></a>
@@ -488,7 +757,7 @@ $best_seller = mysqli_query($conn, "
                             <div class="input-group mb-3">
                                 <input type="text" name="kode" id="kodeInput" value="<?= htmlspecialchars($kode) ?>" 
                                        class="form-control form-control-modern" placeholder="Enter your transaction code" required>
-                                <button class="btn btn-primary-custom" type="submit">
+                                <button class="btn btn-primary-custom" type="submit" style="color: white;">
                                     <i class="fas fa-search"></i> Track
                                 </button>
                             </div>
@@ -524,7 +793,7 @@ $best_seller = mysqli_query($conn, "
     </section>
 
     <!-- Contact Section -->
-    <section class="section contact-section">
+    <section class="section contact-section" id="contact">
         <div class="container">
             <div data-aos="fade-up">
                 <h2 class="section-title">Get in Touch</h2>
@@ -588,7 +857,7 @@ $best_seller = mysqli_query($conn, "
                         <li><a href="#menu" class="text-light text-decoration-none">Menu</a></li>
                         <li><a href="#about" class="text-light text-decoration-none">About Us</a></li>
                         <li><a href="#track" class="text-light text-decoration-none">Track Order</a></li>
-                        <li><a href="login.php" class="text-light text-decoration-none">Member Login</a></li>
+                        <li><a href="login.php" class="text-light text-decoration-none">Login</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-4">
@@ -607,64 +876,42 @@ $best_seller = mysqli_query($conn, "
         </div>
     </footer>
 
-    <!-- Order Modal -->
-    <div class="modal fade" id="orderModal" tabindex="-1">
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <form id="orderForm" method="POST" action="../website/purple-free/dist/backend/transaksi/simpan-web.php" class="modal-content modal-content-modern">
+            <form id="checkoutForm" method="POST" action="../website/purple-free/dist/backend/transaksi/simpan-web.php" class="modal-content modal-content-modern">
                 <div class="modal-header modal-header-modern">
-                    <h5 class="modal-title font-display">Order Form</h5>
+                    <h5 class="modal-title font-display">Complete Your Order</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <input type="hidden" name="id_menu_default" id="id_menu_default">
-                    <input type="hidden" name="diskon_harga" id="diskon-harga" value="0">
-
-                    <!-- Customer Name -->
+                    <!-- Cart items will be populated here -->
+                    <div id="checkoutItems"></div>
+                    
+                    <!-- Customer Information -->
                     <div class="mb-4">
-                        <label for="nama_pelanggan" class="form-label fw-semibold">Customer Name</label>
-                        <input type="text" class="form-control form-control-modern" name="nama_pelanggan" id="nama_pelanggan" placeholder="Enter your name" required>
-                    </div>
-
-                    <!-- Menu Selection -->
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">Select Menu</label>
-                        <div id="menu-container">
-                            <div class="menu-item mb-3 p-3 border rounded-3">
-                                <select name="menu[0][id_menu]" class="form-select form-control-modern mb-2" required>
-                                    <option value="">Choose Menu</option>
-                                    <?php 
-                                    $menuResult = mysqli_query($conn, "SELECT * FROM menu ORDER BY nama_menu ASC");
-                                    while ($menu = mysqli_fetch_assoc($menuResult)) {
-                                        echo "<option value='{$menu['id_menu']}' data-harga='{$menu['harga']}'>" . htmlspecialchars($menu['nama_menu']) . " - Rp" . number_format($menu['harga'], 0, ',', '.') . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                                <input type="number" name="menu[0][jumlah]" class="form-control form-control-modern" placeholder="Quantity" min="1" required>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-outline-secondary" id="add-menu">
-                            <i class="fas fa-plus"></i> Add More Items
-                        </button>
+                        <label for="checkout_nama_pelanggan" class="form-label fw-semibold">Customer Name</label>
+                        <input type="text" class="form-control form-control-modern" name="nama_pelanggan" id="checkout_nama_pelanggan" placeholder="Enter your name" required>
                     </div>
 
                     <!-- Notes -->
                     <div class="mb-4">
-                        <label for="catatan" class="form-label fw-semibold">Special Notes (optional)</label>
-                        <textarea class="form-control form-control-modern" name="catatan" id="catatan" rows="2" placeholder="e.g., no sugar, extra hot, etc."></textarea>
+                        <label for="checkout_catatan" class="form-label fw-semibold">Special Notes (optional)</label>
+                        <textarea class="form-control form-control-modern" name="catatan" id="checkout_catatan" rows="2" placeholder="e.g., no sugar, extra hot, etc."></textarea>
                     </div>
 
                     <!-- Promo Code -->
                     <div class="mb-4">
-                        <label for="kode_promo" class="form-label fw-semibold">Promo Code</label>
-                        <input type="text" name="kode_promo" id="kode_promo" class="form-control form-control-modern" placeholder="Enter promo code">
-                        <div id="promo-feedback" class="form-text d-none"></div>
+                        <label for="checkout_kode_promo" class="form-label fw-semibold">Promo Code</label>
+                        <input type="text" name="kode_promo" id="checkout_kode_promo" class="form-control form-control-modern" placeholder="Enter promo code">
+                        <div id="checkout-promo-feedback" class="form-text d-none"></div>
                     </div>
 
                     <!-- Payment & Location -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label for="metode" class="form-label fw-semibold">Payment Method</label>
-                            <select class="form-select form-control-modern" name="metode" id="metode" required>
+                            <label for="checkout_metode" class="form-label fw-semibold">Payment Method</label>
+                            <select class="form-select form-control-modern" name="metode" id="checkout_metode" required>
                                 <option value="" disabled selected>Choose method</option>
                                 <option value="Tunai">Cash</option>
                                 <option value="QRIS">QRIS</option>
@@ -672,8 +919,8 @@ $best_seller = mysqli_query($conn, "
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="lokasi" class="form-label fw-semibold">Service Type</label>
-                            <select class="form-select form-control-modern" name="lokasi" id="lokasi" required>
+                            <label for="checkout_lokasi" class="form-label fw-semibold">Service Type</label>
+                            <select class="form-select form-control-modern" name="lokasi" id="checkout_lokasi" required>
                                 <option value="Dine In">Dine In</option>
                                 <option value="Take Away">Take Away</option>
                             </select>
@@ -684,23 +931,25 @@ $best_seller = mysqli_query($conn, "
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Subtotal</label>
-                            <input type="text" id="total-harga" class="form-control form-control-modern bg-light" readonly value="Rp0">
+                            <input type="text" id="checkout-total-harga" class="form-control form-control-modern bg-light" readonly value="Rp0">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Total After Discount</label>
-                            <input type="text" id="total-akhir" class="form-control form-control-modern bg-light" readonly value="Rp0">
+                            <input type="text" id="checkout-total-akhir" class="form-control form-control-modern bg-light" readonly value="Rp0">
                         </div>
                     </div>
 
                     <!-- Payment Amount -->
                     <div class="mb-4">
-                        <label for="bayar" class="form-label fw-semibold">Payment Amount (Rp)</label>
-                        <input type="number" name="bayar" id="bayar" class="form-control form-control-modern" min="0" required>
-                        <div id="bayar-warning" class="form-text text-danger d-none">Insufficient payment amount.</div>
+                        <label for="checkout_bayar" class="form-label fw-semibold">Payment Amount (Rp)</label>
+                        <input type="number" name="bayar" id="checkout_bayar" class="form-control form-control-modern" min="0" required>
+                        <div id="checkout-bayar-warning" class="form-text text-danger d-none">Insufficient payment amount.</div>
                     </div>
+
+                    <input type="hidden" name="diskon_harga" id="checkout-diskon-harga" value="0">
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="submit" id="submit-btn" class="btn-primary-custom w-100">
+                    <button type="submit" id="checkout-submit-btn" class="btn-primary-custom w-100">
                         <i class="fas fa-shopping-cart"></i> Place Order
                     </button>
                 </div>
@@ -714,11 +963,289 @@ $best_seller = mysqli_query($conn, "
     <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
 
     <script>
+        // Shopping Cart System
+        let cart = [];
+        let cartTotal = 0;
+
         // Initialize AOS
         AOS.init({
             duration: 800,
             once: true,
             offset: 100
+        });
+
+        // Cart Functions
+        function addToCart(id, name, price, image, stock) {
+            // Check if item already exists in cart
+            const existingItem = cart.find(item => item.id === id);
+            
+            if (existingItem) {
+                if (existingItem.quantity < stock) {
+                    existingItem.quantity += 1;
+                    showNotification(`${name} quantity updated in cart!`);
+                } else {
+                    showNotification(`Sorry, only ${stock} items available in stock!`, 'warning');
+                    return;
+                }
+            } else {
+                cart.push({
+                    id: id,
+                    name: name,
+                    price: price,
+                    image: image,
+                    quantity: 1,
+                    stock: stock
+                });
+                showNotification(`${name} added to cart!`);
+            }
+            
+            updateCartDisplay();
+            animateCartButton();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartDisplay();
+        }
+
+        function updateQuantity(id, change) {
+            const item = cart.find(item => item.id === id);
+            if (item) {
+                const newQuantity = item.quantity + change;
+                if (newQuantity <= 0) {
+                    removeFromCart(id);
+                } else if (newQuantity <= item.stock) {
+                    item.quantity = newQuantity;
+                    updateCartDisplay();
+                } else {
+                    showNotification(`Sorry, only ${item.stock} items available!`, 'warning');
+                }
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cartItems');
+            const cartBadge = document.getElementById('cartBadge');
+            const cartTotal = document.getElementById('cartTotal');
+            const cartSubtotal = document.getElementById('cartSubtotal');
+            const cartTotalAmount = document.getElementById('cartTotalAmount');
+
+            // Update badge
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartBadge.textContent = totalItems;
+            cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Your cart is empty</p>
+                        <small>Add some delicious items to get started!</small>
+                    </div>
+                `;
+                cartTotal.style.display = 'none';
+                return;
+            }
+
+            // Calculate total
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Display cart items
+            cartItems.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">Rp ${formatNumber(item.price)}</div>
+                        <div class="cart-quantity-controls">
+                            <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="mx-2">${item.quantity}</span>
+                            <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeFromCart(${item.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update totals
+            cartSubtotal.textContent = `Rp ${formatNumber(subtotal)}`;
+            cartTotalAmount.textContent = `Rp ${formatNumber(subtotal)}`;
+            cartTotal.style.display = 'block';
+        }
+
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartOverlay = document.getElementById('cartOverlay');
+            
+            cartSidebar.classList.toggle('open');
+            cartOverlay.classList.toggle('show');
+        }
+
+        function clearCart() {
+            if (confirm('Are you sure you want to clear your cart?')) {
+                cart = [];
+                updateCartDisplay();
+                showNotification('Cart cleared!', 'info');
+            }
+        }
+
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                showNotification('Your cart is empty!', 'warning');
+                return;
+            }
+
+            // Populate checkout modal
+            populateCheckoutModal();
+            
+            // Close cart and open checkout modal
+            toggleCart();
+            const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+            checkoutModal.show();
+        }
+
+        function populateCheckoutModal() {
+            const checkoutItems = document.getElementById('checkoutItems');
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            // Create hidden inputs for menu items
+            let menuInputs = '';
+            cart.forEach((item, index) => {
+                menuInputs += `
+                    <input type="hidden" name="menu[${index}][id_menu]" value="${item.id}">
+                    <input type="hidden" name="menu[${index}][jumlah]" value="${item.quantity}">
+                `;
+            });
+
+            checkoutItems.innerHTML = `
+                <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">Order Summary</h6>
+                    ${cart.map(item => `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>${item.name} x ${item.quantity}</span>
+                            <span>Rp ${formatNumber(item.price * item.quantity)}</span>
+                        </div>
+                    `).join('')}
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center fw-bold">
+                        <span>Subtotal:</span>
+                        <span>Rp ${formatNumber(subtotal)}</span>
+                    </div>
+                </div>
+                ${menuInputs}
+            `;
+
+            // Update total fields
+            document.getElementById('checkout-total-harga').value = `Rp ${formatNumber(subtotal)}`;
+            document.getElementById('checkout-total-akhir').value = `Rp ${formatNumber(subtotal)}`;
+            document.getElementById('checkout_bayar').value = subtotal;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('cartNotification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `cart-notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function animateCartButton() {
+            const cartButton = document.querySelector('.cart-button');
+            cartButton.classList.add('quick-add-animation');
+            setTimeout(() => {
+                cartButton.classList.remove('quick-add-animation');
+            }, 600);
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(num);
+        }
+
+        // Checkout form handling
+        document.getElementById('checkout_kode_promo').addEventListener('input', function() {
+            const kode = this.value.trim().toUpperCase();
+            const feedback = document.getElementById('checkout-promo-feedback');
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (!kode) {
+                document.getElementById('checkout-diskon-harga').value = 0;
+                document.getElementById('checkout-total-akhir').value = `Rp ${formatNumber(subtotal)}`;
+                feedback.classList.add('d-none');
+                return;
+            }
+
+            fetch(`../website/purple-free/dist/backend/promo/cek-promo.php?kode=${kode}`)
+                .then(res => res.json())
+                .then(data => {
+                    let diskon = 0;
+                    if (data.valid) {
+                        diskon = data.jenis === 'persen' ? Math.floor(subtotal * data.nilai / 100) : data.nilai;
+                        const totalSetelahDiskon = Math.max(subtotal - diskon, 0);
+                        document.getElementById('checkout-diskon-harga').value = diskon;
+                        document.getElementById('checkout-total-akhir').value = `Rp ${formatNumber(totalSetelahDiskon)}`;
+                        document.getElementById('checkout_bayar').value = totalSetelahDiskon;
+                        feedback.classList.remove('d-none', 'text-danger');
+                        feedback.classList.add('text-success');
+                        feedback.textContent = `Promo applied: -Rp ${formatNumber(diskon)}`;
+                    } else {
+                        document.getElementById('checkout-diskon-harga').value = 0;
+                        document.getElementById('checkout-total-akhir').value = `Rp ${formatNumber(subtotal)}`;
+                        document.getElementById('checkout_bayar').value = subtotal;
+                        feedback.classList.remove('text-success');
+                        feedback.classList.add('text-danger');
+                        feedback.classList.remove('d-none');
+                        feedback.textContent = "Invalid or expired promo code.";
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('checkout-diskon-harga').value = 0;
+                    document.getElementById('checkout-total-akhir').value = `Rp ${formatNumber(subtotal)}`;
+                    feedback.classList.remove('text-success');
+                    feedback.classList.add('text-danger');
+                    feedback.classList.remove('d-none');
+                    feedback.textContent = "Failed to check promo code.";
+                });
+        });
+
+        // Payment validation
+        document.getElementById('checkout_bayar').addEventListener('input', function() {
+            const bayar = parseInt(this.value) || 0;
+            const totalAkhirText = document.getElementById('checkout-total-akhir').value;
+            const totalAkhir = parseInt(totalAkhirText.replace(/[^0-9]/g, '')) || 0;
+            const warning = document.getElementById('checkout-bayar-warning');
+            const submitBtn = document.getElementById('checkout-submit-btn');
+            
+            if (bayar < totalAkhir) {
+                warning.classList.remove('d-none');
+                submitBtn.disabled = true;
+            } else {
+                warning.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Form submission
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            if (cart.length === 0) {
+                e.preventDefault();
+                showNotification('Your cart is empty!', 'warning');
+                return;
+            }
+            
+            // Clear cart after successful submission
+            cart = [];
+            updateCartDisplay();
         });
 
         // Star Rating System
@@ -740,163 +1267,6 @@ $best_seller = mysqli_query($conn, "
                 });
             });
         });
-
-        // Order Modal Logic
-        const idMenuInput = document.getElementById('id_menu_default');
-        const orderModalEl = document.getElementById('orderModal');
-        const bayarInput = document.getElementById("bayar");
-        const totalAkhirInput = document.getElementById("total-akhir");
-        const bayarWarning = document.getElementById("bayar-warning");
-        const submitBtn = document.getElementById("submit-btn");
-
-        let menuIndex = 1;
-
-        // Order button click handlers
-        document.querySelectorAll('.order-button').forEach(button => {
-            button.addEventListener('click', function () {
-                const menuId = this.getAttribute('data-id');
-                idMenuInput.value = menuId;
-            });
-        });
-
-        // Modal show event
-        orderModalEl.addEventListener('show.bs.modal', () => {
-            const idMenuDefault = idMenuInput.value;
-            const selectMenu = document.querySelector('#menu-container select');
-            const inputJumlah = document.querySelector('#menu-container input[type=number]');
-            if (selectMenu && inputJumlah && idMenuDefault) {
-                selectMenu.value = idMenuDefault;
-                inputJumlah.value = 1;
-            }
-            hitungTotal();
-        });
-
-        // Add menu item
-        document.getElementById("add-menu").addEventListener("click", function () {
-            const container = document.getElementById("menu-container");
-            const menuItem = document.createElement("div");
-            menuItem.className = "menu-item mb-3 p-3 border rounded-3";
-            menuItem.innerHTML = `
-                <select name="menu[${menuIndex}][id_menu]" class="form-select form-control-modern mb-2" required>
-                    <option value="">Choose Menu</option>
-                    <?php 
-                    $menuResult = mysqli_query($conn, "SELECT * FROM menu ORDER BY nama_menu ASC");
-                    while ($menu = mysqli_fetch_assoc($menuResult)) {
-                        echo "<option value='{$menu['id_menu']}' data-harga='{$menu['harga']}'>" . htmlspecialchars($menu['nama_menu']) . " - Rp" . number_format($menu['harga'], 0, ',', '.') . "</option>";
-                    }
-                    ?>
-                </select>
-                <input type="number" name="menu[${menuIndex}][jumlah]" class="form-control form-control-modern" placeholder="Quantity" min="1" required>
-                <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-menu">
-                    <i class="fas fa-trash"></i> Remove
-                </button>
-            `;
-            container.appendChild(menuItem);
-            menuIndex++;
-            updateEventListeners();
-            hitungTotal();
-        });
-
-        // Remove menu item
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.remove-menu')) {
-                e.target.closest('.menu-item').remove();
-                hitungTotal();
-            }
-        });
-
-        function updateEventListeners() {
-            document.querySelectorAll('#menu-container select, #menu-container input[type="number"]').forEach(el => {
-                el.removeEventListener('change', hitungTotal);
-                el.addEventListener('change', hitungTotal);
-            });
-        }
-
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(angka);
-        }
-
-        function parseRupiah(str) {
-            return parseInt(str.replace(/[^0-9]/g, '')) || 0;
-        }
-
-        function hitungTotal() {
-            let total = 0;
-            document.querySelectorAll('.menu-item').forEach(item => {
-                const select = item.querySelector('select');
-                const jumlahInput = item.querySelector('input[type="number"]');
-                const selectedOption = select.options[select.selectedIndex];
-                const harga = selectedOption?.getAttribute('data-harga') || 0;
-                const jumlah = jumlahInput.value || 0;
-                total += parseInt(harga) * parseInt(jumlah);
-            });
-            document.getElementById("total-harga").value = formatRupiah(total);
-            hitungDiskon(total);
-        }
-
-        function hitungDiskon(total) {
-            const kode = document.getElementById("kode_promo")?.value?.trim().toUpperCase();
-            const feedback = document.getElementById("promo-feedback");
-            const diskonField = document.getElementById("diskon-harga");
-            const totalAkhirField = document.getElementById("total-akhir");
-
-            if (!kode) {
-                diskonField.value = 0;
-                totalAkhirField.value = formatRupiah(total);
-                if (feedback) feedback.classList.add("d-none");
-                return;
-            }
-
-            fetch(`../website/purple-free/dist/backend/promo/cek-promo.php?kode=${kode}`)
-                .then(res => res.json())
-                .then(data => {
-                    let diskon = 0;
-                    if (data.valid) {
-                        diskon = data.jenis === 'persen' ? Math.floor(total * data.nilai / 100) : data.nilai;
-                        const totalSetelahDiskon = Math.max(total - diskon, 0);
-                        diskonField.value = diskon;
-                        totalAkhirField.value = formatRupiah(totalSetelahDiskon);
-                        feedback.classList.remove("d-none", "text-danger");
-                        feedback.classList.add("text-success");
-                        feedback.textContent = `Promo applied: -${formatRupiah(diskon)}`;
-                    } else {
-                        diskonField.value = 0;
-                        totalAkhirField.value = formatRupiah(total);
-                        feedback.classList.remove("text-success");
-                        feedback.classList.add("text-danger");
-                        feedback.classList.remove("d-none");
-                        feedback.textContent = "Invalid or expired promo code.";
-                    }
-                    cekBayar();
-                })
-                .catch(() => {
-                    diskonField.value = 0;
-                    totalAkhirField.value = formatRupiah(total);
-                    if (feedback) {
-                        feedback.classList.remove("text-success");
-                        feedback.classList.add("text-danger");
-                        feedback.classList.remove("d-none");
-                        feedback.textContent = "Failed to check promo code.";
-                    }
-                    cekBayar();
-                });
-        }
-
-        function cekBayar() {
-            const bayar = parseInt(bayarInput.value) || 0;
-            const totalAkhir = parseRupiah(totalAkhirInput.value);
-            if (bayar < totalAkhir) {
-                bayarWarning.classList.remove("d-none");
-                submitBtn.disabled = true;
-            } else {
-                bayarWarning.classList.add("d-none");
-                submitBtn.disabled = false;
-            }
-        }
 
         // QR Code Scanner
         document.getElementById('qrImage').addEventListener('change', function (event) {
@@ -932,14 +1302,6 @@ $best_seller = mysqli_query($conn, "
                 preview.style.display = 'block';
             };
             reader.readAsDataURL(file);
-        });
-
-        // Initialize event listeners
-        document.addEventListener("DOMContentLoaded", () => {
-            updateEventListeners();
-            document.getElementById("menu-container").addEventListener("input", hitungTotal);
-            document.getElementById("kode_promo").addEventListener("input", () => hitungTotal());
-            bayarInput.addEventListener("input", cekBayar);
         });
 
         // Smooth scrolling for navigation links
@@ -990,7 +1352,20 @@ $best_seller = mysqli_query($conn, "
             card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(card);
         });
+
+        // Close cart when clicking outside
+        document.addEventListener('click', function(e) {
+            const cartSidebar = document.getElementById('cartSidebar');
+            const cartButton = document.querySelector('.cart-button');
+            
+            if (!cartSidebar.contains(e.target) && !cartButton.contains(e.target) && cartSidebar.classList.contains('open')) {
+                toggleCart();
+            }
+        });
+
+        // Initialize cart display
+        updateCartDisplay();
     </script>
+
 </body>
 </html>
-

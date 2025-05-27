@@ -11,12 +11,9 @@ $foto_kasir = "/website/purple-free/dist/assets/images/faces/" . $nama_kasir . "
 include '../../../../config/koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama = $_POST['nama_menu'];
-    $harga = $_POST['harga'];
-    $kategori = $_POST['kategori'];
-    $deskripsi = $_POST['deskripsi'];
-    $stok = $_POST['stok'];
-
+    $nama = $_POST['nama_member'];
+    $no = $_POST['nomor_hp'];
+   
     $gambar = '';
     if ($_FILES['gambar']['error'] === 0) {
         $gambar = basename($_FILES['gambar']['name']);
@@ -25,11 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         move_uploaded_file($_FILES['gambar']['tmp_name'], $targetFile);
     }
 
-    $query = "INSERT INTO menu (nama_menu, harga, kategori, deskripsi, gambar, stok)
-              VALUES ('$nama', '$harga', '$kategori', '$deskripsi', '$gambar', '$stok')";
+    $query = "INSERT INTO special_members (nama_member, nomor_hp)
+              VALUES ('$nama', '$no')";
 
     if (mysqli_query($conn, $query)) {
-      header("Location: ../../pages/tables/basic-table-daftarmenu.php");
+      header("Location: ../../pages/tables/basic-table-datamember.php");
       exit;
     } else {
         echo "Gagal menambahkan menu: " . mysqli_error($conn);
@@ -258,11 +255,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
                 <li class="nav-item">
-                    <a class="nav-link" href="../../pages/tables/basic-table.php">Semua tabel data cafe</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-kasir.php">Data Kasir</a>
-                    <a class="nav-link" href="../../pages/tables/basic-table-datamenu.php">Data menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-datamember.php">Data member</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-daftarmenu.php">Daftar menu</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-review.php">Review</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-diskon.php">Kode promo</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-transaksi.php">Riwayat Transaksi</a>
                   </li>
                 </ul>
@@ -290,15 +287,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST" action="simpan.php" class="forms-sample">
                 <div class="form-group">
                     <label>Nama</label>
-                    <input type="text" name="nama" class="form-control" required>
+                    <input type="text" name="nama_member" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label>Alamat</label>
-                    <input type="text" name="alamat" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Nomor Pelanggan</label>
-                    <input type="text" name="nomor_pelanggan" class="form-control" required>
+                               <div class="form-group">
+                    <label>Nomor </label>
+                    <input type="text" name="nomor_hp" class="form-control" required>
                 </div>
                 <button type="submit" class="btn btn-gradient-primary me-2">Simpan</button>
                 <a href="../../pages/tables/basic-table-datamember.php" class="btn btn-light">Batal</a>

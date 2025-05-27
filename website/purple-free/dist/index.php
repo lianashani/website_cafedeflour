@@ -54,23 +54,7 @@ if (!file_exists($foto_kasir)) {
     <link rel="shortcut icon" href="assets/images/favicon.png" />
   </head>
   <body>
-    <div class="container-scroller">
-      <div class="row p-0 m-0 proBanner" id="proBanner">
-        <div class="col-md-12 p-0 m-0">
-          <div class="card-body card-body-padding d-flex align-items-center justify-content-between">
-            <div class="ps-lg-3">
-              <div class="d-flex align-items-center justify-content-between">
-              </div>
-            </div>
-            <div class="d-flex align-items-center justify-content-between">
-              <a href="https://www.bootstrapdash.com/product/purple-bootstrap-admin-template/"><i class="mdi mdi-home me-3 text-white"></i></a>
-              <button id="bannerClose" class="btn border-0 p-0">
-                <i class="mdi mdi-close text-white mr-0"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+    
       <!-- partial:partials/_navbar.html -->
       <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
         <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
@@ -234,8 +218,14 @@ if (!file_exists($foto_kasir)) {
               </a>
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="pages/tables/basic-table.php"> Semua tabel data cafe</a>
+                   <li class="nav-item">
+                    <a class="nav-link" href="/website/purple-free/dist/pages/tables/basic-table-kasir.php">Data Kasir</a>
+                    <a class="nav-link" href="/website/purple-free/dist/pages/tables/basic-table-datamenu.php">Data menu</a>
+                    <a class="nav-link" href="/website/purple-free/dist/pages/tables/basic-table-datamember.php">Data member</a>
+                    <a class="nav-link" href="/website/purple-free/dist/pages/tables/basic-table-daftarmenu.php">Daftar menu</a>
+                    <a class="nav-link" href="/website/purple-free/dist/pages/tables/basic-table-review.php">Review</a>
+                    <a class="nav-link" href="/website/purple-free/dist/pages/tables/basic-table-diskon.php">Kode promo</a>
+                    <a class="nav-link" href="/website/purple-free/dist/pages/tables/basic-table-transaksi.php">Riwayat Transaksi</a>
                   </li>
                 </ul>
               </div>

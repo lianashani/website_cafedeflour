@@ -136,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -158,6 +157,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../../assets/css/style.css">
     <!-- End layout styles -->
     <link rel="shortcut icon" href="../../assets/images/favicon.png" />
+    
+    <style>
+      .menu-item {
+        position: relative;
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        background: #f8f9fc;
+      }
+      
+      .menu-item .remove-menu {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .menu-item .remove-menu:hover {
+        background: #c82333;
+      }
+      
+      .menu-counter {
+        background: #007bff;
+        color: white;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      
+      .total-display {
+        background: #28a745;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 10px;
+      }
+    </style>
   </head>
   <body>
     <div class="container-scroller">
@@ -330,7 +385,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </li>
             <li class="nav-item">
               <a class="nav-link" href="../../index.php">
-                <span class="me\\nu-title">Dashboard</span>
+                <span class="menu-title">Dashboard</span>
                 <i class="mdi mdi-home menu-icon"></i>
               </a>
             </li>
@@ -355,12 +410,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </a>
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                     <a class="nav-link" href="../../pages/tables/basic-table.php">Semua tabel data cafe</a>
+                 <li class="nav-item">
                     <a class="nav-link" href="../../pages/tables/basic-table-kasir.php">Data Kasir</a>
-                    <a class="nav-link" href="../../pages/tables/basic-table-datamenu.php">Data menu</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-datamember.php">Data member</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-daftarmenu.php">Daftar menu</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-review.php">Review</a>
+                    <a class="nav-link" href="../../pages/tables/basic-table-diskon.php">Kode promo</a>
                     <a class="nav-link" href="../../pages/tables/basic-table-transaksi.php">Riwayat Transaksi</a>
                   </li>
                 </ul>
@@ -381,175 +436,196 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </nav>
             </div>
             <div class="row">
-  <div class="container mt-4">
-  <div class="row">
+              <div class="container mt-4">
+                <div class="row">
+                  <!-- Form Tambah Transaksi -->
+                  <div class="col-lg-6 grid-margin stretch-card">
+                    <div class="card">
+                      <div class="card-body">
+                        <h4 class="card-title">Tambah Transaksi</h4>
+                        <form action="/website/purple-free/dist/backend/transaksi/simpan.php" method="POST" class="forms-sample">
 
-    <!-- Form Tambah Transaksi -->
-    <div class="col-lg-6 grid-margin stretch-card">
-      <div class="card">
-        <div class="card-body">
-          <h4 class="card-title">Tambah Transaksi</h4>
-          <form action="/website/purple-free/dist/backend/transaksi/simpan.php" method="POST" class="forms-sample">
+                          <?php if (isset($_GET['sukses'])): ?>
+                            <div class="alert alert-success">Transaksi berhasil ditambahkan!</div>
+                          <?php endif; ?>
 
-          <?php if (isset($_GET['sukses'])): ?>
-            <p style="color: green;">Transaksi berhasil ditambahkan!</p>
-          <?php endif; ?>
+                          <div class="form-group">
+                            <label for="id_pelanggan">Pilih Member</label>
+                            <select name="id_pelanggan" id="id_pelanggan" class="form-control">
+                              <option value="">Bukan Member</option>
+                              <?php
+                                $members = mysqli_query($conn, "SELECT * FROM special_members");
+                                while ($row = mysqli_fetch_assoc($members)) {
+                                  echo "<option value='{$row['id_member']}'>" . htmlspecialchars($row['nama_member']) . " - {$row['nomor_hp']} ({$row['tingkatan']})</option>";
+                                }
+                              ?>
+                            </select>
+                          </div>
 
-            <div class="form-group">
-  <label for="id_pelanggan">Pilih Member</label>
-  <select name="id_pelanggan" id="id_pelanggan" class="form-control">
-    <option value="">Bukan Member</option>
-    <?php
-      $members = mysqli_query($conn, "SELECT * FROM special_members");
-      while ($row = mysqli_fetch_assoc($members)) {
-        echo "<option value='{$row['id_member']}'>" . htmlspecialchars($row['nama_member']) . " - {$row['nomor_hp']} ({$row['tingkatan']})</option>";
-      }
-    ?>
-  </select>
-</div>
+                          <div class="form-group">
+                            <label for="nama_pelanggan">Nama Pelanggan</label>
+                            <input type="text" name="nama_pelanggan" id="nama_pelanggan" class="form-control" placeholder="Nama Pelanggan" required>
+                          </div>
 
+                          <div class="form-group">
+                            <label for="lokasi">Lokasi</label>
+                            <select name="lokasi" class="form-control" required>
+                              <option value="Dine In">Dine In</option>
+                              <option value="Take Away">Take Away</option>
+                            </select>
+                          </div>
 
-            <div class="form-group">
-              <label for="nama_pelanggan">Nama Pelanggan</label>
-              <input type="text" name="nama_pelanggan" class="form-control" placeholder="Nama Pelanggan" required>
-            </div>
+                          <div class="form-group">
+                            <label for="menu">Pilih Menu</label>
+                            <div id="menu-container">
+                              <div class="menu-item" data-index="0">
+                                <div class="menu-counter">1</div>
+                                <select name="menu[0][id_menu]" class="form-control menu-select" required>
+                                  <option value="">Pilih Menu</option>
+                                  <?php
+                                  mysqli_data_seek($menuResult, 0);
+                                  while ($menu = mysqli_fetch_assoc($menuResult)):
+                                    $nama = htmlspecialchars($menu['nama_menu']);
+                                    $harga = number_format($menu['harga'], 0, ',', '.');
+                                    $stok = (int) $menu['stok'];
+                                    $disabled = $stok <= 0 ? 'disabled' : '';
+                                  ?>
+                                    <option value="<?= $menu['id_menu']?>" data-harga="<?= $menu['harga'] ?>" data-stok="<?= $stok ?>" <?= $disabled ?>>
+                                      <?= "$nama - Rp$harga (Stok: $stok)" ?>
+                                    </option>
+                                  <?php endwhile; ?>
+                                </select>
+                                <input type="number" name="menu[0][jumlah]" class="form-control mt-2 jumlah-input" placeholder="Jumlah" min="1" required>
+                              </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary mt-2" id="add-menu">
+                              <i class="mdi mdi-plus"></i> Tambah Menu
+                            </button>
+                            <button type="button" class="btn btn-outline-danger mt-2" id="clear-all-menu" style="display: none;">
+                              <i class="mdi mdi-delete"></i> Hapus Semua
+                            </button>
+                          </div>
 
-            <div class="form-group">
-              <label for="lokasi">Lokasi</label>
-              <select name="lokasi" class="form-control" required>
-                <option value="Dine In">Dine In</option>
-                <option value="Take Away">Take Away</option>
-              </select>
-            </div>
+                          <div class="form-group">
+                            <label for="catatan">Catatan</label>
+                            <textarea name="catatan" class="form-control" placeholder="Catatan tambahan..." rows="2"></textarea>
+                          </div>
 
-            <div class="form-group">
-              <label for="menu">Pilih Menu</label>
-              <div id="menu-container">
-                <div class="menu-item mb-2">
-                  <select name="menu[0][id_menu]" class="form-control" required>
-                    <option value="">Pilih Menu</option>
-                    <?php
-                    // Reset pointer agar bisa di-loop ulang (mysqli_fetch_assoc exhausts)
-                    mysqli_data_seek($menuResult, 0);
-                    while ($menu = mysqli_fetch_assoc($menuResult)): ?>
-                      <option value="<?= $menu['id_menu']?>" data-harga="<?= $menu['harga'] ?>"><?= htmlspecialchars($menu['nama_menu']) ?> - Rp<?= number_format($menu['harga'], 0, ',', '.') ?></option>
-                    <?php endwhile; ?>
-                  </select>
-                  <input type="number" name="menu[0][jumlah]" class="form-control mt-2" placeholder="Jumlah" min="1" required>
+                          <div class="form-group">
+                            <label for="total_harga">Total Harga</label>
+                            <input type="text" name="total_harga" id="total_harga" class="form-control" readonly>
+                            <div class="total-display" id="total-display" style="display: none;">
+                              Total: Rp <span id="total-amount">0</span>
+                            </div>
+                          </div>
+
+                          <div class="form-group">
+                            <label for="bayar">Bayar (Rp)</label>
+                            <input type="number" name="bayar" id="bayar" class="form-control" min="0" required>
+                            <small class="form-text text-muted" id="kembalian-info"></small>
+                          </div>
+
+                          <button type="submit" class="btn btn-gradient-primary me-2">
+                            <i class="mdi mdi-content-save"></i> Tambah Transaksi
+                          </button>
+                          <button type="button" class="btn btn-outline-secondary" id="reset-form">
+                            <i class="mdi mdi-refresh"></i> Reset Form
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6 grid-margin stretch-card">
+                    <div class="card">
+                      <div class="card-body">
+                        <h4 class="card-title">Riwayat Transaksi</h4>
+                        <form class="form-inline mb-3" method="GET">
+                          <input type="date" name="tanggal" class="form-control mr-2" value="<?= isset($_GET['tanggal']) ? htmlspecialchars($_GET['tanggal']) : '' ?>">
+                          <input type="text" name="kasir" class="form-control mr-2" placeholder="Nama kasir" value="<?= isset($_GET['kasir']) ? htmlspecialchars($_GET['kasir']) : '' ?>">
+                          <button type="submit" class="btn btn-primary">Filter</button>
+                          <a href="chartjs.php" class="btn btn-secondary ml-2">Reset</a>
+                          <a href="../../backend/transaksi/antrian.php" class="btn btn-primary"> Lihat Antrian Pesanan</a>
+                          <a href="../../backend/transaksi/tracking.php" class="btn btn-outline-success mt-3"> Lacak Pesanan Customer</a>
+                        </form>
+
+                        <form method="POST" action="../../backend/transaksi/aksi_batch.php" id="batchForm">
+                          <div class="mb-3">
+                            <!-- Tombol untuk toggle checkbox -->
+                            <button type="button" class="btn btn-danger btn-sm" id="toggleCheckboxBtn">Hapus Terpilih</button>
+
+                            <!-- Tombol submit hapus yang hanya muncul saat checkbox aktif -->
+                            <button type="submit" name="hapus_terpilih" id="submitHapusBtn" class="btn btn-danger btn-sm d-none" onclick="return confirm('Yakin ingin menghapus yang dipilih?')">Konfirmasi Hapus</button>
+                            <a href="../../backend/transaksi/clear_all.php" class="btn btn-outline-danger btn-sm ml-2" onclick="return confirm('Yakin ingin menghapus semua transaksi?')">Clear All</a>
+                          </div>
+
+                          <div class="table-responsive">
+                            <table class="table table-striped">
+                              <thead>
+                                <tr>
+                                  <th class="select-col d-none"><input type="checkbox" id="checkAll"></th>
+                                  <th>Tanggal</th>
+                                  <th>Waktu</th>
+                                  <th>Nama</th>
+                                  <th>Lokasi</th>
+                                  <th>Menu</th>
+                                  <th>Subtotal</th>
+                                  <th>Diskon</th>
+                                  <th>Total</th>
+                                  <th>Bayar</th>
+                                  <th>Kembali</th>
+                                  <th>Kasir</th>
+                                  <th>Catatan</th>
+                                  <th>Struk</th>
+                                  <th>Aksi</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <?php while ($row = mysqli_fetch_assoc($transaksiResult)): ?>
+                                <tr>
+                                  <td class="select-col d-none">
+                                    <input type="checkbox" name="kode_transaksi[]" value="<?= $row['kode_transaksi'] ?>">
+                                  </td>
+                                  <td><?= $row['tanggal'] ?></td>
+                                  <td><?= $row['waktu'] ?></td>
+                                  <td><?= $row['nama_pelanggan'] ?></td>
+                                  <td><?= $row['lokasi'] ?></td>
+                                  <td><?= $row['daftar_menu'] ?></td>
+                                  <td>Rp<?= number_format($row['total_harga'], 0, ',', '.') ?></td>
+                                  <td>Rp<?= number_format($row['diskon'], 0, ',', '.') ?></td>
+                                  <td>Rp<?= number_format($row['total_setelah_diskon'], 0, ',', '.') ?></td>
+                                  <td>Rp<?= number_format($row['bayar'], 0, ',', '.') ?></td>
+                                  <td>Rp<?= number_format($row['kembali'], 0, ',', '.') ?></td>
+                                  <td><?= $row['nama_kasir'] ?></td>
+                                  <td><?= $row['catatan'] ?></td>
+                                  <td><a href="../../backend/transaksi/cetak_struk.php?kode=<?= $row['kode_transaksi'] ?>" target="_blank">🧾</a></td>
+                                  <td>
+                                    <a href="../../backend/transaksi/edit.php?kode=<?= $row['kode_transaksi'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                                    <a href="../../backend/transaksi/hapus.php?kode=<?= $row['kode_transaksi'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus transaksi ini?')">Hapus</a>
+                                  </td>
+                                  <td>
+                                    <?php if ($row['status'] === 'Selesai'): ?>
+                                      <span class="badge badge-success"><?= $row['status'] ?></span>
+                                    <?php elseif ($row['status'] === 'Pending'): ?>
+                                      <span class="badge badge-warning"><?= $row['status'] ?></span>
+                                    <?php else: ?>
+                                      <span class="badge badge-danger"><?= $row['status'] ?></span>
+                                    <?php endif; ?>
+                                  </td>
+                                </tr>
+                                <?php endwhile; ?>
+                              </tbody>
+                            </table>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <button type="button" class="btn btn-secondary mt-2" id="add-menu">Tambah Menu</button>
             </div>
-            
-
-            <div class="form-group">
-              <label for="catatan">Catatan</label>
-              <textarea name="catatan" class="form-control" placeholder="Catatan tambahan..." rows="2"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="total_harga">Total Harga</label>
-              <input type="text" name="total_harga" id="total_harga" class="form-control" readonly>
-            </div>
-
-            <div class="form-group">
-              <label for="bayar">Bayar (Rp)</label>
-              <input type="number" name="bayar" class="form-control" min="0" required>
-            </div>
-
-            <button type="submit" class="btn btn-gradient-primary me-2">Tambah</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-  <div class="col-lg-6 grid-margin stretch-card">
-  <div class="card">
-      <?php
-    $pesananBaru = mysqli_query($conn, "SELECT * FROM transaksi ORDER BY id_transaksi DESC LIMIT 5");
-    ?>
-    <div class="card-body">
-      <h4 class="card-title">Riwayat Transaksi</h4>
-      <form class="form-inline mb-3" method="GET">
-        <input type="date" name="tanggal" class="form-control mr-2" value="<?= isset($_GET['tanggal']) ? htmlspecialchars($_GET['tanggal']) : '' ?>">
-        <input type="text" name="kasir" class="form-control mr-2" placeholder="Nama kasir" value="<?= isset($_GET['kasir']) ? htmlspecialchars($_GET['kasir']) : '' ?>">
-        <button type="submit" class="btn btn-primary">Filter</button>
-        <a href="chartjs.php" class="btn btn-secondary ml-2">Reset</a>
-        <a href="../../backend/transaksi/antrian.php" class="btn btn-primary"> Lihat Antrian Pesanan</a>
-        <a href="../../backend/transaksi/tracking.php" class="btn btn-outline-success mt-3"> Lacak Pesanan Customer</a>
-      </form>
-
-
-      <form method="POST" action="../../backend/transaksi/aksi_batch.php" id="batchForm">
-        <div class="mb-3">
-          <!-- Tombol untuk toggle checkbox -->
-          <button type="button" class="btn btn-danger btn-sm" id="toggleCheckboxBtn">Hapus Terpilih</button>
-
-          <!-- Tombol submit hapus yang hanya muncul saat checkbox aktif -->
-          <button type="submit" name="hapus_terpilih" id="submitHapusBtn" class="btn btn-danger btn-sm d-none" onclick="return confirm('Yakin ingin menghapus yang dipilih?')">Konfirmasi Hapus</button>
-          <a href="../../backend/transaksi/clear_all.php" class="btn btn-outline-danger btn-sm ml-2" onclick="return confirm('Yakin ingin menghapus semua transaksi?')">Clear All</a>
-        </div>
-
-        <div class="table-responsive">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th class="select-col d-none"><input type="checkbox" id="checkAll"></th>
-        <th>Tanggal</th>
-        <th>Waktu</th>
-        <th>Nama</th>
-        <th>Lokasi</th>
-        <th>Menu</th>
-        <th>Subtotal</th>
-        <th>Diskon</th>
-        <th>Total</th>
-        <th>Bayar</th>
-        <th>Kembali</th>
-        <th>Kasir</th>
-        <th>Catatan</th>
-        <th>Struk</th>
-        <th>Aksi</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php while ($row = mysqli_fetch_assoc($transaksiResult)): ?>
-      <tr>
-        <td class="select-col d-none">
-          <input type="checkbox" name="kode_transaksi[]" value="<?= $row['kode_transaksi'] ?>">
-        </td>
-        <td><?= $row['tanggal'] ?></td>
-        <td><?= $row['waktu'] ?></td>
-        <td><?= $row['nama_pelanggan'] ?></td>
-        <td><?= $row['lokasi'] ?></td>
-        <td><?= $row['daftar_menu'] ?></td>
-        <td>Rp<?= number_format($row['total_harga'], 0, ',', '.') ?></td>
-        <td>Rp<?= number_format($row['diskon'], 0, ',', '.') ?></td>
-        <td>Rp<?= number_format($row['total_setelah_diskon'], 0, ',', '.') ?></td>
-        <td>Rp<?= number_format($row['bayar'], 0, ',', '.') ?></td>
-        <td>Rp<?= number_format($row['kembali'], 0, ',', '.') ?></td>
-        <td><?= $row['nama_kasir'] ?></td>
-        <td><?= $row['catatan'] ?></td>
-        <td><a href="../../backend/transaksi/cetak_struk.php?kode=<?= $row['kode_transaksi'] ?>" target="_blank">🧾</a></td>
-        <td>
-          <a href="../../backend/transaksi/edit.php?kode=<?= $row['kode_transaksi'] ?>" class="btn btn-warning btn-sm">Edit</a>
-          <a href="../../backend/transaksi/hapus.php?kode=<?= $row['kode_transaksi'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus transaksi ini?')">Hapus</a>
-        </td>
-        <td>
-          <?php if ($row['status'] === 'Selesai'): ?>
-            <span class="badge badge-success"><?= $row['status'] ?></span>
-          <?php elseif ($row['status'] === 'Pending'): ?>
-            <span class="badge badge-warning"><?= $row['status'] ?></span>
-          <?php else: ?>
-            <span class="badge badge-danger"><?= $row['status'] ?></span>
-          <?php endif; ?>
-        </td>
-      </tr>
-      <?php endwhile; ?>
-    </tbody>
-  </table>
-</div>
-
+          </div>
           <!-- content-wrapper ends -->
         </div>
         <!-- main-panel ends -->
@@ -557,6 +633,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <!-- page-body-wrapper ends -->
     </div>
     <!-- container-scroller -->
+    
     <!-- plugins:js -->
     <script src="../../assets/vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
@@ -572,107 +649,270 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- endinject -->
     <!-- Custom js for this page -->
     <script src="../../assets/js/chart.js"></script>
-    <!-- <script src="../../pages/charts/menu.js"></script> -->
-   <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    let menuIndex = 1;
-    const menuContainer = document.getElementById('menu-container');
-    const totalHargaField = document.getElementById('total_harga');
-    const addMenuBtn = document.getElementById('add-menu');
+    
+    <!-- CONSOLIDATED JAVASCRIPT - NO DUPLICATES -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Global variables
+        let menuIndex = 1;
+        const menuContainer = document.getElementById('menu-container');
+        const totalHargaField = document.getElementById('total_harga');
+        const totalDisplay = document.getElementById('total-display');
+        const totalAmount = document.getElementById('total-amount');
+        const addMenuBtn = document.getElementById('add-menu');
+        const clearAllMenuBtn = document.getElementById('clear-all-menu');
+        const resetFormBtn = document.getElementById('reset-form');
+        const bayarInput = document.getElementById('bayar');
+        const kembalianInfo = document.getElementById('kembalian-info');
+        const memberSelect = document.getElementById('id_pelanggan');
+        const namaPelangganInput = document.getElementById('nama_pelanggan');
 
-    // Tambah menu saat tombol diklik
-    addMenuBtn.addEventListener('click', function () {
-      const newMenu = document.createElement('div');
-      newMenu.classList.add('menu-item', 'mt-3');
-      newMenu.innerHTML = `
-        <select name="menu[${menuIndex}][id_menu]" class="form-control" required>
-          <option value="">Pilih Menu</option>
+        // Menu options template
+        const menuOptionsTemplate = `
           <?php
-          mysqli_data_seek($menuResult, 0); // pastikan ulangi hasil query
-          while ($menu = mysqli_fetch_assoc($menuResult)): ?>
-            <option value="<?= $menu['id_menu'] ?>" data-harga="<?= $menu['harga'] ?>">
-              <?= htmlspecialchars($menu['nama_menu']) ?> - Rp<?= number_format($menu['harga'], 0, ',', '.') ?>
-            </option>
-          <?php endwhile; ?>
-        </select>
-        <input type="number" name="menu[${menuIndex}][jumlah]" class="form-control mt-2" placeholder="Jumlah" min="1" required>
-      `;
-      menuContainer.appendChild(newMenu);
-      menuIndex++;
-    });
+          mysqli_data_seek($menuResult, 0);
+          $options = '<option value="">Pilih Menu</option>';
+          while ($menu = mysqli_fetch_assoc($menuResult)):
+            $nama = htmlspecialchars($menu['nama_menu']);
+            $harga = number_format($menu['harga'], 0, ',', '.');
+            $stok = (int) $menu['stok'];
+            $disabled = $stok <= 0 ? 'disabled' : '';
+            $options .= '<option value="' . $menu['id_menu'] . '" data-harga="' . $menu['harga'] . '" data-stok="' . $stok . '" ' . $disabled . '>' . $nama . ' - Rp' . $harga . ' (Stok: ' . $stok . ')</option>';
+          endwhile;
+          echo $options;
+          ?>
+        `;
 
-    // Hitung total harga
-    function hitungTotal() {
-      let total = 0;
-      const menuItems = document.querySelectorAll('#menu-container .menu-item');
+        // Add menu functionality
+        addMenuBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Prevent double execution
+          if (addMenuBtn.disabled) return;
+          addMenuBtn.disabled = true;
+          
+          setTimeout(() => {
+            addMenuBtn.disabled = false;
+          }, 300);
 
-      menuItems.forEach(item => {
-        const selectMenu = item.querySelector('select');
-        const jumlah = parseInt(item.querySelector('input[type="number"]').value) || 0;
-        const harga = parseInt(selectMenu.options[selectMenu.selectedIndex]?.dataset.harga) || 0;
-        total += jumlah * harga;
-      });
+          const newMenu = document.createElement('div');
+          newMenu.classList.add('menu-item');
+          newMenu.setAttribute('data-index', menuIndex);
+          
+          newMenu.innerHTML = `
+            <div class="menu-counter">${menuIndex + 1}</div>
+            <button type="button" class="remove-menu" onclick="removeMenuItem(${menuIndex})">×</button>
+            <select name="menu[${menuIndex}][id_menu]" class="form-control menu-select" required>
+              ${menuOptionsTemplate}
+            </select>
+            <input type="number" name="menu[${menuIndex}][jumlah]" class="form-control mt-2 jumlah-input" placeholder="Jumlah" min="1" required>
+          `;
+          
+          menuContainer.appendChild(newMenu);
+          menuIndex++;
+          
+          updateMenuCounters();
+          updateClearButtonVisibility();
+          hitungTotal();
+        });
 
-      totalHargaField.value = 'Rp' + total.toLocaleString('id-ID');
-    }
+        // Remove menu item function (global scope)
+        window.removeMenuItem = function(index) {
+          const menuItem = document.querySelector(`[data-index="${index}"]`);
+          if (menuItem) {
+            menuItem.remove();
+            updateMenuCounters();
+            updateClearButtonVisibility();
+            hitungTotal();
+          }
+        };
 
-    menuContainer.addEventListener('change', hitungTotal);
-    menuContainer.addEventListener('input', hitungTotal);
+        // Clear all menu items
+        clearAllMenuBtn.addEventListener('click', function() {
+          if (confirm('Hapus semua menu yang ditambahkan?')) {
+            const menuItems = menuContainer.querySelectorAll('.menu-item');
+            menuItems.forEach((item, index) => {
+              if (index > 0) { // Keep the first menu item
+                item.remove();
+              }
+            });
+            
+            // Reset first menu item
+            const firstMenuItem = menuContainer.querySelector('.menu-item');
+            if (firstMenuItem) {
+              firstMenuItem.querySelector('select').value = '';
+              firstMenuItem.querySelector('input').value = '';
+            }
+            
+            menuIndex = 1;
+            updateMenuCounters();
+            updateClearButtonVisibility();
+            hitungTotal();
+          }
+        });
 
-    // Checkbox "Pilih Semua"
-    const checkAll = document.getElementById('checkAll');
-    if (checkAll) {
-      checkAll.addEventListener('change', function () {
-        const checkboxes = document.querySelectorAll('input[name="kode_transaksi[]"]');
-        for (const cb of checkboxes) {
-          cb.checked = this.checked;
+        // Update menu counters
+        function updateMenuCounters() {
+          const menuItems = menuContainer.querySelectorAll('.menu-item');
+          menuItems.forEach((item, index) => {
+            const counter = item.querySelector('.menu-counter');
+            if (counter) {
+              counter.textContent = index + 1;
+            }
+          });
         }
+
+        // Update clear button visibility
+        function updateClearButtonVisibility() {
+          const menuItems = menuContainer.querySelectorAll('.menu-item');
+          clearAllMenuBtn.style.display = menuItems.length > 1 ? 'inline-block' : 'none';
+        }
+
+        // Calculate total price
+        function hitungTotal() {
+          let total = 0;
+          const menuItems = document.querySelectorAll('#menu-container .menu-item');
+
+          menuItems.forEach(item => {
+            const selectMenu = item.querySelector('select');
+            const jumlah = parseInt(item.querySelector('input[type="number"]').value) || 0;
+            const selectedOption = selectMenu.options[selectMenu.selectedIndex];
+            const harga = parseInt(selectedOption?.dataset.harga) || 0;
+            total += jumlah * harga;
+          });
+
+          const formattedTotal = total.toLocaleString('id-ID');
+          totalHargaField.value = total > 0 ? 'Rp' + formattedTotal : '';
+          totalAmount.textContent = formattedTotal;
+          totalDisplay.style.display = total > 0 ? 'block' : 'none';
+          
+          updateKembalian();
+        }
+
+        // Update kembalian calculation
+        function updateKembalian() {
+          const total = getCurrentTotal();
+          const bayar = parseInt(bayarInput.value) || 0;
+          
+          if (bayar > 0 && total > 0) {
+            const kembalian = bayar - total;
+            if (kembalian >= 0) {
+              kembalianInfo.textContent = `Kembalian: Rp ${kembalian.toLocaleString('id-ID')}`;
+              kembalianInfo.className = 'form-text text-success';
+            } else {
+              kembalianInfo.textContent = `Kurang: Rp ${Math.abs(kembalian).toLocaleString('id-ID')}`;
+              kembalianInfo.className = 'form-text text-danger';
+            }
+          } else {
+            kembalianInfo.textContent = '';
+          }
+        }
+
+        // Get current total as number
+        function getCurrentTotal() {
+          let total = 0;
+          const menuItems = document.querySelectorAll('#menu-container .menu-item');
+          
+          menuItems.forEach(item => {
+            const selectMenu = item.querySelector('select');
+            const jumlah = parseInt(item.querySelector('input[type="number"]').value) || 0;
+            const selectedOption = selectMenu.options[selectMenu.selectedIndex];
+            const harga = parseInt(selectedOption?.dataset.harga) || 0;
+            total += jumlah * harga;
+          });
+          
+          return total;
+        }
+
+        // Member selection handling
+        function toggleNamaPelanggan() {
+          if (memberSelect.value !== "") {
+            namaPelangganInput.disabled = true;
+            namaPelangganInput.required = false;
+            namaPelangganInput.value = "";
+          } else {
+            namaPelangganInput.disabled = false;
+            namaPelangganInput.required = true;
+          }
+        }
+
+        // Reset form
+        resetFormBtn.addEventListener('click', function() {
+          if (confirm('Reset semua data form?')) {
+            document.querySelector('form').reset();
+            
+            // Clear additional menu items
+            const menuItems = menuContainer.querySelectorAll('.menu-item');
+            menuItems.forEach((item, index) => {
+              if (index > 0) {
+                item.remove();
+              }
+            });
+            
+            menuIndex = 1;
+            updateMenuCounters();
+            updateClearButtonVisibility();
+            hitungTotal();
+            toggleNamaPelanggan();
+          }
+        });
+
+        // Event listeners
+        menuContainer.addEventListener('change', function(e) {
+          if (e.target.classList.contains('menu-select')) {
+            const selectedOption = e.target.selectedOptions[0];
+            const stok = selectedOption.getAttribute('data-stok');
+            const jumlahInput = e.target.nextElementSibling;
+            if (stok) {
+              jumlahInput.setAttribute('max', stok);
+            }
+          }
+          hitungTotal();
+        });
+
+        menuContainer.addEventListener('input', hitungTotal);
+        bayarInput.addEventListener('input', updateKembalian);
+        memberSelect.addEventListener('change', toggleNamaPelanggan);
+
+        // Checkbox functionality
+        const checkAll = document.getElementById('checkAll');
+        if (checkAll) {
+          checkAll.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('input[name="kode_transaksi[]"]');
+            for (const cb of checkboxes) {
+              cb.checked = this.checked;
+            }
+          });
+        }
+
+        // Toggle delete mode
+        const toggleBtn = document.getElementById('toggleCheckboxBtn');
+        const submitBtn = document.getElementById('submitHapusBtn');
+        const selectCols = document.querySelectorAll('.select-col');
+        let checkboxMode = false;
+
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+            checkboxMode = !checkboxMode;
+
+            selectCols.forEach(col => {
+              col.classList.toggle('d-none', !checkboxMode);
+            });
+
+            if (submitBtn) {
+              submitBtn.classList.toggle('d-none', !checkboxMode);
+            }
+
+            toggleBtn.textContent = checkboxMode ? 'Batal Hapus' : 'Hapus Terpilih';
+          });
+        }
+
+        // Initialize
+        toggleNamaPelanggan();
+        updateClearButtonVisibility();
+        hitungTotal();
       });
-    }
-
-    // Toggle hapus mode
-    const toggleBtn = document.getElementById('toggleCheckboxBtn');
-    const submitBtn = document.getElementById('submitHapusBtn');
-    const selectCols = document.querySelectorAll('.select-col');
-
-    let checkboxMode = false;
-
-    toggleBtn.addEventListener('click', () => {
-      checkboxMode = !checkboxMode;
-
-      selectCols.forEach(col => {
-        col.classList.toggle('d-none', !checkboxMode);
-      });
-
-      submitBtn.classList.toggle('d-none', !checkboxMode);
-
-      toggleBtn.textContent = checkboxMode ? 'Batal Hapus' : 'Hapus Terpilih';
-    });
-  });
-</script>
-</script>
-<script>
-  const memberSelect = document.querySelector('select[name="id_pelanggan"]');
-  const namaPelangganInput = document.querySelector('input[name="nama_pelanggan"]');
-
-  function toggleNamaPelanggan() {
-    if (memberSelect.value !== "") {
-      namaPelangganInput.disabled = true;
-      namaPelangganInput.required = false;
-      namaPelangganInput.value = ""; // Kosongkan jika ada input sebelumnya
-    } else {
-      namaPelangganInput.disabled = false;
-      namaPelangganInput.required = true;
-    }
-  }
-
-  // Jalankan saat halaman dimuat
-  document.addEventListener('DOMContentLoaded', toggleNamaPelanggan);
-
-  // Jalankan saat pilihan member berubah
-  memberSelect.addEventListener('change', toggleNamaPelanggan);
-</script>
-
-    <!-- End custom js for this page -->
+    </script>
   </body>
 </html>
